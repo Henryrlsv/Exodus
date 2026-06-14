@@ -14,5 +14,3 @@ requests==2.31.0
 reportlab==4.1.0
 Werkzeug==3.0.3
 gunicorn==22.0.0
-gevent==24.2.1
-gevent-websocket==0.10.1

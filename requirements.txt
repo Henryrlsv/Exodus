@@ -1,34 +1,17 @@
-# InboxDTE v5 — Dependencias
-# pip install -r requirements.txt
-
-# Framework
 Flask==3.0.3
 flask-socketio==5.3.6
 python-socketio==5.11.2
 python-engineio==4.9.1
 simple-websocket==1.0.0
-
-# Env vars
 python-dotenv==1.0.1
-
-# Scheduler
 APScheduler==3.10.4
-
-# Cifrado
 cryptography==42.0.8
-
-# Base de datos
 psycopg2-binary==2.9.9
-
-# Google Auth (para Gmail OAuth2)
 google-auth==2.29.0
 google-auth-oauthlib==1.2.0
 google-auth-httplib2==0.2.0
 requests==2.31.0
-
-# PDF generation
 reportlab==4.1.0
-
-# Servidor
 Werkzeug==3.0.3
 gunicorn==22.0.0
+eventlet==0.36.1

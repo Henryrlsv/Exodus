@@ -1,8 +1,8 @@
 """
-app.py v5.1 — Compatible con Python 3.13 + Railway
+app.py v5.2 — Compatible con Python 3.13 + Railway
 ====================================================
-- Cambiado async_mode: eventlet → gevent
-- Gevent es compatible con Python 3.13
+- async_mode='threading' (no requiere eventlet ni gevent)
+- Funciona con gunicorn simple
 """
 
 import os
@@ -56,7 +56,7 @@ def create_app():
     socketio = SocketIO(
         app,
         cors_allowed_origins='*',
-        async_mode='gevent',        # Cambiado: eventlet → gevent (compatible Python 3.13)
+        async_mode='threading',     # No requiere eventlet ni gevent
         manage_session=False,
         logger=False,
         engineio_logger=False,
@@ -80,7 +80,7 @@ def create_app():
     init_scheduler(app, socketio)
 
     env_label = 'PRODUCCIÓN (Railway)' if IS_PRODUCTION else 'DESARROLLO (local)'
-    logger.info('InboxDTE v5.1 iniciado — %s', env_label)
+    logger.info('InboxDTE v5.2 iniciado — %s', env_label)
     return app, socketio
 
 

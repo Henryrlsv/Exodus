@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: inboxdte
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --worker-class eventlet -w 1 --bind 0.0.0.0:$PORT "app:create_app()[0]"
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: FERNET_KEY
+        sync: false          # Lo ingresas manualmente en el dashboard
+      - key: DATABASE_URL
+        fromDatabase:
+          name: inboxdte-db
+          property: connectionString
+      - key: DOWNLOAD_FOLDER
+        value: /tmp/downloads
+      - key: FLASK_DEBUG
+        value: "false"
+      - key: AUTO_CHECK_INTERVAL
+        value: "0"
+      - key: RENDER
+        value: "true"
+
+databases:
+  - name: inboxdte-db
+    databaseName: inboxdte
+    user: inboxdte
+    plan: free

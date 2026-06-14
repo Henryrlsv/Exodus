@@ -1,11 +1,8 @@
 """
-app.py v5 — Listo para Render.com
-===================================
-Cambios vs v4:
-  - SESSION_COOKIE_SECURE=True en producción (HTTPS en Render)
-  - Logs solo a StreamHandler en producción (Render captura stdout)
-  - Storage de archivos via ruta configurable (DOWNLOAD_FOLDER)
-  - Compatible con PostgreSQL y SQLite
+app.py v5.1 — Compatible con Python 3.13 + Railway
+====================================================
+- Cambiado async_mode: eventlet → gevent
+- Gevent es compatible con Python 3.13
 """
 
 import os
@@ -16,7 +13,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# En Render los logs van a stdout, no a archivo
 IS_PRODUCTION = os.getenv('RENDER', '') != ''
 
 handlers = [logging.StreamHandler()]
@@ -41,19 +37,16 @@ def create_app():
         DATABASE=os.getenv('DATABASE', 'data/app.db'),
         SESSION_COOKIE_HTTPONLY=True,
         SESSION_COOKIE_SAMESITE='Lax',
-        # En Render el sitio corre bajo HTTPS → Secure=True
         SESSION_COOKIE_SECURE=IS_PRODUCTION,
         PERMANENT_SESSION_LIFETIME=86400 * 7,
         SESSION_REFRESH_EACH_REQUEST=True,
     )
 
-    # Crear carpetas necesarias (en Render, downloads es efímero — ver README)
     for folder in [app.config['DOWNLOAD_FOLDER'], 'data']:
         os.makedirs(folder, exist_ok=True)
     if not IS_PRODUCTION:
         os.makedirs('logs', exist_ok=True)
 
-    # Inicializar Fernet key UNA VEZ
     _init_fernet_key()
 
     from database import init_db
@@ -63,7 +56,7 @@ def create_app():
     socketio = SocketIO(
         app,
         cors_allowed_origins='*',
-        async_mode='threading',
+        async_mode='gevent',        # Cambiado: eventlet → gevent (compatible Python 3.13)
         manage_session=False,
         logger=False,
         engineio_logger=False,
@@ -86,8 +79,8 @@ def create_app():
     from scheduler import init_scheduler
     init_scheduler(app, socketio)
 
-    env_label = 'PRODUCCIÓN (Render)' if IS_PRODUCTION else 'DESARROLLO (local)'
-    logger.info('InboxDTE v5 iniciado — %s', env_label)
+    env_label = 'PRODUCCIÓN (Railway)' if IS_PRODUCTION else 'DESARROLLO (local)'
+    logger.info('InboxDTE v5.1 iniciado — %s', env_label)
     return app, socketio
 
 
@@ -100,10 +93,7 @@ def _init_fernet_key():
         new_key = Fernet.generate_key().decode()
         auth_helpers._RAW_KEY = new_key
         logger.warning(
-            'FERNET_KEY no encontrada en variables de entorno.\n'
-            'Se generó una clave temporal: %s\n'
-            'IMPORTANTE: agrégala a las variables de entorno en Render '
-            'o las contraseñas de aplicación no sobrevivirán reinicios.',
+            'FERNET_KEY no encontrada. Clave temporal: %s — agrégala a las variables de entorno.',
             new_key
         )
     else:
